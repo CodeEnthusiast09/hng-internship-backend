@@ -4,7 +4,7 @@ A RESTful API built with NestJS that returns profile information along with dyna
 
 ## 🚀 Live Demo
 
-**API Endpoint**: `http://your-deployed-url/me`
+**API Endpoint**: `https://hng-internship-backend-production.up.railway.app/me`
 
 ## 📋 Features
 
@@ -35,8 +35,8 @@ Before you begin, ensure you have the following installed:
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/yourusername/hng-task-1.git
-   cd hng-task-1
+   git clone https://github.com/CodeEnthusiast09/hng-internship-backend.git
+   cd hng-internship-backend
    ```
 
 2. **Install dependencies**
@@ -61,57 +61,16 @@ Before you begin, ensure you have the following installed:
    USER_EMAIL=your.email@example.com
    USER_NAME=Your Full Name
    USER_STACK=Node.js/NestJS
-   HTTP_TIMEOUT=5000
+   HTTP_TIMEOUT=10000
    ```
 
 ## 🚀 Running the Application
-
-### Development Mode
-
-```bash
-npm run start:dev
-```
-
-### Production Mode
-
-```bash
-npm run build
-npm run start:prod
-```
-
-### Watch Mode
 
 ```bash
 npm run start:dev
 ```
 
 The API will be available at `http://localhost:3000`
-
-## 🧪 Testing
-
-### Run all tests
-
-```bash
-npm run test
-```
-
-### Run tests in watch mode
-
-```bash
-npm run test:watch
-```
-
-### Run test coverage
-
-```bash
-npm run test:cov
-```
-
-### Run e2e tests
-
-```bash
-npm run test:e2e
-```
 
 ## 📡 API Documentation
 
@@ -123,7 +82,7 @@ Returns profile information with a dynamic cat fact.
 
 ```http
 GET /me HTTP/1.1
-Host: your-api-url
+Host: https://hng-internship-backend-production.up.railway.app/
 ```
 
 **Response:**
@@ -140,145 +99,5 @@ Host: your-api-url
   "fact": "Cats sleep 70% of their lives."
 }
 ```
-
-**Response Fields:**
-
-| Field        | Type   | Description                         |
-| ------------ | ------ | ----------------------------------- |
-| `status`     | string | Always returns "success"            |
-| `user.email` | string | User's email address                |
-| `user.name`  | string | User's full name                    |
-| `user.stack` | string | Backend technology stack            |
-| `timestamp`  | string | Current UTC time in ISO 8601 format |
-| `fact`       | string | Random cat fact from Cat Facts API  |
-
-**Status Codes:**
-
-- `200 OK`: Successful request
-- `500 Internal Server Error`: Server error
-
-## 🏗️ Project Structure
-
-```
-hng-task-1/
-├── src/
-│   ├── profile/
-│   │   ├── profile.controller.ts    # HTTP request handlers
-│   │   ├── profile.service.ts       # Business logic
-│   │   ├── profile.module.ts        # Module configuration
-│   │   ├── profile.controller.spec.ts
-│   │   └── profile.service.spec.ts
-│   ├── app.module.ts                # Root module
-│   └── main.ts                      # Application entry point
-├── test/
-│   └── app.e2e-spec.ts             # End-to-end tests
-├── .env                             # Environment variables (not in git)
-├── .env.example                     # Environment template
-├── .gitignore
-├── package.json
-└── README.md
-```
-
-## 🔒 Environment Variables
-
-| Variable           | Description               | Default                      |
-| ------------------ | ------------------------- | ---------------------------- |
-| `PORT`             | Server port               | 3000                         |
-| `CAT_FACT_API_URL` | Cat Facts API endpoint    | <https://catfact.ninja/fact> |
-| `USER_EMAIL`       | Your email address        | -                            |
-| `USER_NAME`        | Your full name            | -                            |
-| `USER_STACK`       | Your backend stack        | -                            |
-| `HTTP_TIMEOUT`     | HTTP request timeout (ms) | 5000                         |
-
-## 🐛 Error Handling
-
-The API implements comprehensive error handling:
-
-- **External API Timeout**: Returns fallback message if Cat Facts API times out
-- **External API Failure**: Returns error message if Cat Facts API is unavailable
-- **Network Errors**: Gracefully handles network connectivity issues
-
-## 🔍 Testing the API
-
-### Using cURL
-
-```bash
-curl http://localhost:3000/me
-```
-
-### Using HTTPie
-
-```bash
-http GET http://localhost:3000/me
-```
-
-### Using Browser
-
-Simply navigate to: `http://localhost:3000/me`
-
-## 📝 Development Notes
-
-### Key Implementation Details
-
-1. **Dynamic Timestamp**: Generated on each request using `new Date().toISOString()`
-2. **Cat Fact Fetching**: New fact fetched on every request (not cached)
-3. **Observable to Promise**: Uses `firstValueFrom` to convert RxJS Observables
-4. **CORS**: Enabled for cross-origin requests
-5. **Logging**: Built-in NestJS logger for debugging
-
-### Best Practices Implemented
-
-- ✅ Separation of concerns (Controller → Service pattern)
-- ✅ Environment-based configuration
-- ✅ Proper error handling and fallbacks
-- ✅ TypeScript for type safety
-- ✅ Modular architecture
-- ✅ Comprehensive logging
-- ✅ API timeout configuration
-
-## 🚀 Deployment
-
-This application can be deployed to various platforms:
-
-- Railway (Recommended)
-- Heroku
-- AWS (EC2, Elastic Beanstalk)
-- Digital Ocean
-
-See the deployment section in the documentation for detailed instructions.
-
-## 📚 Dependencies
-
-### Production Dependencies
-
-- `@nestjs/common`: ^10.0.0
-- `@nestjs/core`: ^10.0.0
-- `@nestjs/platform-express`: ^10.0.0
-- `@nestjs/axios`: ^3.0.0
-- `@nestjs/config`: ^3.0.0
-- `axios`: ^1.6.0
-- `rxjs`: ^7.8.1
-
-### Development Dependencies
-
-- `@nestjs/cli`: ^10.0.0
-- `@nestjs/schematics`: ^10.0.0
-- `@nestjs/testing`: ^10.0.0
-- TypeScript: ^5.1.3
-- Jest: ^29.5.0
-
-## 🤝 Contributing
-
-This is a bootcamp task submission. However, suggestions and feedback are welcome!
-
-## 👨‍💻 Author
-
-**Your Name**
-
-- Email: <your.email@example.com>
-- GitHub: [@yourusername](https://github.com/yourusername)
-- LinkedIn: [Your LinkedIn](https://linkedin.com/in/yourprofile)
-
----
 
 **HNG Internship** - Backend Track Stage 0
