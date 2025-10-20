@@ -4,7 +4,7 @@ A RESTful API service that analyzes strings and computes their properties includ
 
 ## Live Demo
 
-**API Base URL:** `https:brave-communication-stage-1-task.up.railway.app`
+**API Base URL:** `https://brave-communication-stage-1-task.up.railway.app`
 
 **Quick Test:**
 ```bash
