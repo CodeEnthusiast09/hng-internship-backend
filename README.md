@@ -4,11 +4,11 @@ A RESTful API service that analyzes strings and computes their properties includ
 
 ## Live Demo
 
-**API Base URL:** `[Your Railway URL will go here after deployment]`
+**API Base URL:** `https:brave-communication-stage-1-task.up.railway.app`
 
 **Quick Test:**
 ```bash
-curl https://your-app.up.railway.app/strings
+curl https:brave-communication-stage-1-task.up.railway.app/strings
 ```
 
 ## Features
@@ -98,7 +98,7 @@ curl http://localhost:3000/strings
 
 ### Base URL
 - **Local:** `http://localhost:3000`
-- **Production:** `https://your-app.up.railway.app`
+- **Production:** `https://https:brave-communication-stage-1-task.up.railway.app`
 
 ---
 
