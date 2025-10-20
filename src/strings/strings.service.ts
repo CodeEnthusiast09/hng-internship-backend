@@ -1,0 +1,168 @@
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+  UnprocessableEntityException,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { StringEntity } from './entities/string.entity';
+import { CreateStringDto } from './dto/create-string.dto';
+import { FilterStringsDto } from './dto/filter-strings.dto';
+import { StringAnalyzer } from './utils/string-analyzer.util';
+import { NaturalLanguageParser } from './utils/nl-parser.util';
+
+@Injectable()
+export class StringsService {
+  constructor(
+    @InjectRepository(StringEntity)
+    private readonly stringRepository: Repository<StringEntity>,
+  ) {}
+
+  async create(createStringDto: CreateStringDto) {
+    const { value } = createStringDto;
+
+    if (typeof value !== 'string') {
+      throw new UnprocessableEntityException(
+        "Invalid data type for 'value' (must be string)",
+      );
+    }
+
+    if (value === undefined || value === null) {
+      throw new BadRequestException(
+        'Invalid request body or missing "value" field',
+      );
+    }
+
+    if (value.trim() === '') {
+      throw new BadRequestException(
+        'Invalid request body or missing "value" field',
+      );
+    }
+
+    // Check if string already exists
+    const existingString = await this.stringRepository.findOne({
+      where: { value },
+    });
+
+    if (existingString) {
+      throw new ConflictException('String already exists in the system');
+    }
+
+    // Analyze the string
+    const properties = StringAnalyzer.analyze(value);
+
+    // Create entity
+    const stringEntity = this.stringRepository.create({
+      id: properties.sha256_hash,
+      value,
+      ...properties,
+    });
+
+    // Save to database
+    const savedEntity = await this.stringRepository.save(stringEntity);
+
+    // Return formatted response
+    return this.formatResponse(savedEntity);
+  }
+
+  async findOne(stringValue: string) {
+    const stringEntity = await this.stringRepository.findOne({
+      where: { value: stringValue },
+    });
+
+    if (!stringEntity) {
+      throw new NotFoundException('String does not exist in the system');
+    }
+
+    return this.formatResponse(stringEntity);
+  }
+
+  async findAll(filterDto: FilterStringsDto) {
+    const query = this.stringRepository.createQueryBuilder('string');
+
+    // Apply filters
+    if (filterDto.is_palindrome !== undefined) {
+      query.andWhere('string.is_palindrome = :is_palindrome', {
+        is_palindrome: filterDto.is_palindrome,
+      });
+    }
+
+    if (filterDto.min_length !== undefined) {
+      query.andWhere('string.length >= :min_length', {
+        min_length: filterDto.min_length,
+      });
+    }
+
+    if (filterDto.max_length !== undefined) {
+      query.andWhere('string.length <= :max_length', {
+        max_length: filterDto.max_length,
+      });
+    }
+
+    if (filterDto.word_count !== undefined) {
+      query.andWhere('string.word_count = :word_count', {
+        word_count: filterDto.word_count,
+      });
+    }
+
+    if (filterDto.contains_character !== undefined) {
+      query.andWhere('string.character_frequency_map ? :character', {
+        character: filterDto.contains_character,
+      });
+    }
+
+    const strings = await query.getMany();
+
+    return {
+      data: strings.map((s) => this.formatResponse(s)),
+      count: strings.length,
+      filters_applied: filterDto,
+    };
+  }
+
+  async findByNaturalLanguage(query: string) {
+    // Parse the natural language query
+    const parseResult = NaturalLanguageParser.parse(query);
+
+    // Use the parsed filters to query the database
+    const filterDto: FilterStringsDto = parseResult.parsed_filters;
+    const result = await this.findAll(filterDto);
+
+    // Return with interpretation
+    return {
+      data: result.data,
+      count: result.count,
+      interpreted_query: parseResult,
+    };
+  }
+
+  async remove(stringValue: string) {
+    const stringEntity = await this.stringRepository.findOne({
+      where: { value: stringValue },
+    });
+
+    if (!stringEntity) {
+      throw new NotFoundException('String does not exist in the system');
+    }
+
+    await this.stringRepository.remove(stringEntity);
+  }
+
+  private formatResponse(entity: StringEntity) {
+    return {
+      id: entity.id,
+      value: entity.value,
+      properties: {
+        length: entity.length,
+        is_palindrome: entity.is_palindrome,
+        unique_characters: entity.unique_characters,
+        word_count: entity.word_count,
+        sha256_hash: entity.sha256_hash,
+        character_frequency_map: entity.character_frequency_map,
+      },
+      created_at: entity.created_at,
+    };
+  }
+}
