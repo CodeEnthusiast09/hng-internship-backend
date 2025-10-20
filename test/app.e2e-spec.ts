@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 <<<<<<< HEAD
-import { AppModule } from './../src/app.module';
+import { AppModule } from '../src/app.module.ts.bak';
 
 describe('ProfileController (e2e)', () => {
   let app: INestApplication;

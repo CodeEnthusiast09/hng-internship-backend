@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
+import { StringsService } from './strings.service.ts.bak';
 import { StringsController } from './strings.controller';
-import { StringsService } from './strings.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { StringEntity } from './entities/string.entity';
 import { StringsStorageService } from './strings-storage.service';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([StringEntity])],
   controllers: [StringsController],
   providers: [StringsService, StringsStorageService],
 })

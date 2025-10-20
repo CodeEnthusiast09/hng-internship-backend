@@ -1,136 +1,96 @@
 import {
   Injectable,
-  ConflictException,
   NotFoundException,
   BadRequestException,
-  UnprocessableEntityException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { StringEntity } from './entities/string.entity';
 import { CreateStringDto } from './dto/create-string.dto';
 import { FilterStringsDto } from './dto/filter-strings.dto';
 import { StringAnalyzer } from './utils/string-analyzer.util';
 import { NaturalLanguageParser } from './utils/nl-parser.util';
+import { StringsStorageService, StoredString } from './strings-storage.service';
 
 @Injectable()
 export class StringsService {
-  constructor(
-    @InjectRepository(StringEntity)
-    private readonly stringRepository: Repository<StringEntity>,
-  ) {}
+  constructor(private readonly storage: StringsStorageService) {}
 
-  async create(createStringDto: CreateStringDto) {
+  create(createStringDto: CreateStringDto) {
     const { value } = createStringDto;
 
-    if (typeof value !== 'string') {
-      throw new UnprocessableEntityException(
-        "Invalid data type for 'value' (must be string)",
-      );
-    }
-
-    if (value === undefined || value === null) {
+    if (!value || value.trim() === '') {
       throw new BadRequestException(
-        'Invalid request body or missing "value" field',
+        'Value field is required and cannot be empty',
       );
-    }
-
-    if (value.trim() === '') {
-      throw new BadRequestException(
-        'Invalid request body or missing "value" field',
-      );
-    }
-
-    // Check if string already exists
-    const existingString = await this.stringRepository.findOne({
-      where: { value },
-    });
-
-    if (existingString) {
-      throw new ConflictException('String already exists in the system');
     }
 
     // Analyze the string
     const properties = StringAnalyzer.analyze(value);
 
-    // Create entity
-    const stringEntity = this.stringRepository.create({
+    // Create stored string object
+    const storedString: StoredString = {
       id: properties.sha256_hash,
       value,
       ...properties,
-    });
+      created_at: new Date(),
+    };
 
-    // Save to database
-    const savedEntity = await this.stringRepository.save(stringEntity);
+    // Save to storage
+    this.storage.create(storedString);
 
     // Return formatted response
-    return this.formatResponse(savedEntity);
+    return this.formatResponse(storedString);
   }
 
-  async findOne(stringValue: string) {
-    const stringEntity = await this.stringRepository.findOne({
-      where: { value: stringValue },
-    });
+  findOne(stringValue: string) {
+    const storedString = this.storage.findByValue(stringValue);
 
-    if (!stringEntity) {
+    if (!storedString) {
       throw new NotFoundException('String does not exist in the system');
     }
 
-    return this.formatResponse(stringEntity);
+    return this.formatResponse(storedString);
   }
 
-  async findAll(filterDto: FilterStringsDto) {
-    const query = this.stringRepository.createQueryBuilder('string');
+  findAll(filterDto: FilterStringsDto) {
+    let results = this.storage.findAll();
 
     // Apply filters
     if (filterDto.is_palindrome !== undefined) {
-      query.andWhere('string.is_palindrome = :is_palindrome', {
-        is_palindrome: filterDto.is_palindrome,
-      });
+      results = results.filter(
+        (s) => s.is_palindrome === filterDto.is_palindrome,
+      );
     }
 
     if (filterDto.min_length !== undefined) {
-      query.andWhere('string.length >= :min_length', {
-        min_length: filterDto.min_length,
-      });
+      results = results.filter((s) => s.length >= filterDto.min_length!);
     }
 
     if (filterDto.max_length !== undefined) {
-      query.andWhere('string.length <= :max_length', {
-        max_length: filterDto.max_length,
-      });
+      results = results.filter((s) => s.length <= filterDto.max_length!);
     }
 
     if (filterDto.word_count !== undefined) {
-      query.andWhere('string.word_count = :word_count', {
-        word_count: filterDto.word_count,
-      });
+      results = results.filter((s) => s.word_count === filterDto.word_count);
     }
 
     if (filterDto.contains_character !== undefined) {
-      query.andWhere('string.character_frequency_map ? :character', {
-        character: filterDto.contains_character,
-      });
+      results = results.filter(
+        (s) =>
+          (s.character_frequency_map[filterDto.contains_character!] ?? 0) > 0,
+      );
     }
 
-    const strings = await query.getMany();
-
     return {
-      data: strings.map((s) => this.formatResponse(s)),
-      count: strings.length,
+      data: results.map((s) => this.formatResponse(s)),
+      count: results.length,
       filters_applied: filterDto,
     };
   }
 
-  async findByNaturalLanguage(query: string) {
-    // Parse the natural language query
+  findByNaturalLanguage(query: string) {
     const parseResult = NaturalLanguageParser.parse(query);
-
-    // Use the parsed filters to query the database
     const filterDto: FilterStringsDto = parseResult.parsed_filters;
-    const result = await this.findAll(filterDto);
+    const result = this.findAll(filterDto);
 
-    // Return with interpretation
     return {
       data: result.data,
       count: result.count,
@@ -138,31 +98,23 @@ export class StringsService {
     };
   }
 
-  async remove(stringValue: string) {
-    const stringEntity = await this.stringRepository.findOne({
-      where: { value: stringValue },
-    });
-
-    if (!stringEntity) {
-      throw new NotFoundException('String does not exist in the system');
-    }
-
-    await this.stringRepository.remove(stringEntity);
+  remove(stringValue: string) {
+    this.storage.remove(stringValue);
   }
 
-  private formatResponse(entity: StringEntity) {
+  private formatResponse(storedString: StoredString) {
     return {
-      id: entity.id,
-      value: entity.value,
+      id: storedString.id,
+      value: storedString.value,
       properties: {
-        length: entity.length,
-        is_palindrome: entity.is_palindrome,
-        unique_characters: entity.unique_characters,
-        word_count: entity.word_count,
-        sha256_hash: entity.sha256_hash,
-        character_frequency_map: entity.character_frequency_map,
+        length: storedString.length,
+        is_palindrome: storedString.is_palindrome,
+        unique_characters: storedString.unique_characters,
+        word_count: storedString.word_count,
+        sha256_hash: storedString.sha256_hash,
+        character_frequency_map: storedString.character_frequency_map,
       },
-      created_at: entity.created_at,
+      created_at: storedString.created_at,
     };
   }
 }
