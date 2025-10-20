@@ -24,7 +24,18 @@ export class StringsStorageService implements OnModuleInit {
 
   // Add sample data on startup (optional - makes testing easier for graders)
   onModuleInit() {
-    const sampleStrings = [];
+    const sampleStrings = [
+      'racecar',
+      'hello world',
+      'A man, a plan, a canal, Panama!',
+      'madam',
+      'test',
+      'the quick brown fox',
+      'level',
+      'programming',
+      'noon',
+      'data structures',
+    ];
 
     sampleStrings.forEach((value) => {
       const properties = StringAnalyzer.analyze(value);
