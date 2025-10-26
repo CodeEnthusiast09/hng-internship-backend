@@ -12,6 +12,7 @@ import {
 import { Response } from 'express';
 import { CountriesService } from './countries.service';
 import { QueryCountriesDto } from './dto/query-countries.dto';
+import { CountryResponseDto } from './dto/country-response.dto';
 
 @Controller('countries')
 export class CountriesController {
@@ -25,7 +26,8 @@ export class CountriesController {
   @Get()
   @UsePipes(new ValidationPipe({ transform: true }))
   async findAll(@Query() queryDto: QueryCountriesDto) {
-    return await this.countriesService.findAll(queryDto);
+    const countries = await this.countriesService.findAll(queryDto);
+    return countries.map((country) => new CountryResponseDto(country));
   }
 
   @Get('image')
@@ -36,7 +38,8 @@ export class CountriesController {
 
   @Get(':name')
   async findOne(@Param('name') name: string) {
-    return await this.countriesService.findOne(name);
+    const country = await this.countriesService.findOne(name);
+    return new CountryResponseDto(country);
   }
 
   @Delete(':name')
