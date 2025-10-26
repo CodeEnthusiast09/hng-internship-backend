@@ -1,98 +1,281 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Country Currency & Exchange API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A RESTful API built with NestJS that fetches country data from external APIs, stores it in a MySQL database, and provides CRUD operations with filtering, sorting, and image generation capabilities.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Features
 
-## Description
+- Fetch country data from RestCountries API
+- Fetch exchange rates from Open Exchange Rates API
+- Calculate estimated GDP based on population and exchange rates
+- CRUD operations for countries
+- Filter by region and currency
+- Sort by GDP, population, or name
+- Generate and serve summary images
+- Persistent MySQL database storage
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Prerequisites
 
-## Project setup
+Before you begin, ensure you have the following installed:
+
+- Node.js (v16 or higher)
+- npm or yarn
+- MySQL (v5.7 or higher)
+
+## Installation
+
+1. Clone the repository:
 
 ```bash
-$ npm install
+git clone https://github.com/CodeEnthusiast09/hng-internship-backend.git
+cd hng-internship-backend
+git checkout stage-2
 ```
 
-## Compile and run the project
+2. Install dependencies:
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+npm install
 ```
 
-## Run tests
+3. Create a MySQL database:
+
+```sql
+CREATE DATABASE countries_api;
+```
+
+4. Configure environment variables:
+   - Copy `.env.example` to `.env`
+   - Update the values in `.env`:
+
+```env
+DB_HOST=localhost
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=your_password_here
+DB_DATABASE=countries_api
+
+PORT=3000
+NODE_ENV=development
+
+COUNTRIES_API_URL=https://restcountries.com/v2/all?fields=name,capital,region,population,flag,currencies
+EXCHANGE_RATE_API_URL=https://open.er-api.com/v6/latest/USD
+```
+
+## Running the Application
+
+### Development mode
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm run start:dev
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Production mode
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+npm run build
+npm run start:prod
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+The API will be available at `http://localhost:3000`
 
-## Resources
+## API Endpoints
 
-Check out a few resources that may come in handy when working with NestJS:
+### 1. Refresh Country Data
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+Fetches all countries and exchange rates, then caches them in the database.
 
-## Support
+**Endpoint:** `POST /countries/refresh`
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+**Response:**
 
-## Stay in touch
+```json
+{
+  "message": "Countries data refreshed successfully",
+  "total": 250
+}
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### 2. Get All Countries
 
-## License
+Retrieves all countries from the database with optional filters and sorting.
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+**Endpoint:** `GET /countries`
+
+**Query Parameters:**
+
+- `region` (optional) - Filter by region (e.g., `Africa`, `Europe`)
+- `currency` (optional) - Filter by currency code (e.g., `NGN`, `USD`)
+- `sort` (optional) - Sort results. Options:
+  - `gdp_asc` / `gdp_desc`
+  - `population_asc` / `population_desc`
+  - `name_asc` / `name_desc`
+
+**Examples:**
+
+```bash
+GET /countries?region=Africa
+GET /countries?currency=NGN
+GET /countries?sort=gdp_desc
+GET /countries?region=Africa&sort=population_desc
+```
+
+**Response:**
+
+```json
+[
+  {
+    "id": 1,
+    "name": "Nigeria",
+    "capital": "Abuja",
+    "region": "Africa",
+    "population": 206139589,
+    "currencyCode": "NGN",
+    "exchangeRate": 1600.23,
+    "estimatedGdp": 25767448125.2,
+    "flagUrl": "https://flagcdn.com/ng.svg",
+    "lastRefreshedAt": "2025-10-22T18:00:00Z"
+  }
+]
+```
+
+### 3. Get Single Country
+
+Retrieves a specific country by name.
+
+**Endpoint:** `GET /countries/:name`
+
+**Example:**
+
+```bash
+GET /countries/Nigeria
+```
+
+**Response:**
+
+```json
+{
+  "id": 1,
+  "name": "Nigeria",
+  "capital": "Abuja",
+  "region": "Africa",
+  "population": 206139589,
+  "currencyCode": "NGN",
+  "exchangeRate": 1600.23,
+  "estimatedGdp": 25767448125.2,
+  "flagUrl": "https://flagcdn.com/ng.svg",
+  "lastRefreshedAt": "2025-10-22T18:00:00Z"
+}
+```
+
+### 4. Delete Country
+
+Deletes a country record from the database.
+
+**Endpoint:** `DELETE /countries/:name`
+
+**Example:**
+
+```bash
+DELETE /countries/Nigeria
+```
+
+**Response:**
+
+```json
+{
+  "message": "Country deleted successfully"
+}
+```
+
+### 5. Get Status
+
+Shows total countries and last refresh timestamp.
+
+**Endpoint:** `GET /status`
+
+**Response:**
+
+```json
+{
+  "total_countries": 250,
+  "last_refreshed_at": "2025-10-22T18:00:00Z"
+}
+```
+
+### 6. Get Summary Image
+
+Serves the generated summary image containing total countries, top 5 by GDP, and timestamp.
+
+**Endpoint:** `GET /countries/image`
+
+**Response:** PNG image file
+
+## Error Responses
+
+The API returns consistent JSON error responses:
+
+### 400 Bad Request
+
+```json
+{
+  "error": "Validation failed",
+  "details": {
+    "currency_code": "is required"
+  }
+}
+```
+
+### 404 Not Found
+
+```json
+{
+  "error": "Country not found"
+}
+```
+
+### 500 Internal Server Error
+
+```json
+{
+  "error": "Internal server error"
+}
+```
+
+### 503 Service Unavailable
+
+```json
+{
+  "error": "External data source unavailable",
+  "details": "Could not fetch data from [API name]"
+}
+```
+
+## Technologies Used
+
+- **NestJS** - Progressive Node.js framework
+- **TypeORM** - ORM for TypeScript and JavaScript
+- **MySQL** - Relational database
+- **Axios** - HTTP client for API requests
+- **Canvas** - Image generation library
+- **Class Validator** - Validation decorators
+
+## Currency Handling
+
+The API handles various currency scenarios:
+
+1. **Multiple currencies**: Only the first currency code is stored
+2. **No currencies**: Sets `currency_code`, `exchange_rate` to `null` and `estimated_gdp` to `0`
+3. **Missing exchange rate**: Sets `exchange_rate` and `estimated_gdp` to `null`
+
+## Update Logic
+
+When refreshing country data:
+
+- Existing countries (matched by name, case-insensitive) are **updated**
+- New countries are **inserted**
+- The `estimated_gdp` is recalculated with a fresh random multiplier (1000-2000) on each refresh
+- The global `last_refreshed_at` timestamp is updated
+
+```
+
+```
