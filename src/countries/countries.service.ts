@@ -56,18 +56,32 @@ export class CountriesService {
       let processedCount = 0;
 
       for (const countryData of countriesData) {
-        const currencyCode = countryData.currencies?.[0]?.code ?? undefined;
-        const exchangeRate = currencyCode
-          ? (exchangeRates[currencyCode] ?? undefined)
-          : undefined;
+        const currencyCode = countryData.currencies?.[0]?.code ?? null;
 
-        let estimatedGdp: number | undefined;
-        if (currencyCode && exchangeRate && countryData.population) {
-          const randomMultiplier = Math.random() * (2000 - 1000) + 1000;
-          estimatedGdp =
-            (countryData.population * randomMultiplier) / exchangeRate;
-        } else if (!currencyCode) {
+        const exchangeRate = currencyCode
+          ? (exchangeRates[currencyCode] ?? null)
+          : null;
+
+        let estimatedGdp: number | null;
+
+        if (!currencyCode) {
+          // Case A: no currencies -> per spec
+          // currency_code = null, exchange_rate = null, estimated_gdp = 0
           estimatedGdp = 0;
+        } else if (exchangeRate === null) {
+          // Case B: currency_code exists but not found in exchange rates API -> per spec
+          // exchange_rate = null, estimated_gdp = null
+          estimatedGdp = null;
+        } else {
+          // exchangeRate exists; compute only if population present
+          if (countryData.population) {
+            const randomMultiplier = Math.random() * (2000 - 1000) + 1000;
+            estimatedGdp =
+              (countryData.population * randomMultiplier) / exchangeRate;
+          } else {
+            // population missing => can't compute; choose null (safer than leaving undefined)
+            estimatedGdp = null;
+          }
         }
 
         // Check if country exists (case-insensitive)
@@ -80,13 +94,13 @@ export class CountriesService {
 
         const countryRecord = {
           name: countryData.name,
-          capital: countryData.capital ?? undefined,
-          region: countryData.region ?? undefined,
+          capital: countryData.capital,
+          region: countryData.region,
           population: countryData.population,
           currencyCode: currencyCode,
-          exchangeRate: exchangeRate,
-          estimatedGdp: estimatedGdp,
-          flagUrl: countryData.flag ?? undefined,
+          exchangeRate: exchangeRate ?? undefined,
+          estimatedGdp: estimatedGdp ?? undefined,
+          flagUrl: countryData.flag,
           lastRefreshedAt: currentTimestamp,
         };
 

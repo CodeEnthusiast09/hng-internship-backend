@@ -9,10 +9,10 @@ export class CountryResponseDto {
   name: string;
 
   @Expose()
-  capital: string;
+  capital: string | null;
 
   @Expose()
-  region: string;
+  region: string | null;
 
   @Expose()
   population: number;
@@ -27,10 +27,10 @@ export class CountryResponseDto {
   estimated_gdp: number | null;
 
   @Expose()
-  flag_url: string;
+  flag_url: string | null;
 
   @Expose()
-  last_refreshed_at: Date;
+  last_refreshed_at: Date | null;
 
   constructor(entity: Country) {
     this.id = entity.id;
